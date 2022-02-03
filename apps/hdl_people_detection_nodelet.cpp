@@ -58,12 +58,17 @@ public:
     clusters_pub = private_nh.advertise<hdl_people_tracking::ClusterArray>("clusters", 10);
 
     // subscribers
+    std::string points_topic_name;
+    if(!private_nh.getParam("lidar_point_name",points_topic_name))
+    {
+      points_topic_name = "/os_cloud_node/points";
+    }
     globalmap_sub = nh.subscribe("/globalmap", 1, &HdlPeopleDetectionNodelet::globalmap_callback, this);
     if(private_nh.param<bool>("static_sensor", false)) {
-      static_points_sub = mt_nh.subscribe("/velodyne_points", 32, &HdlPeopleDetectionNodelet::callback_static, this);
+      static_points_sub = mt_nh.subscribe(points_topic_name.c_str(), 32, &HdlPeopleDetectionNodelet::callback_static, this);
     } else {
       odom_sub.reset(new message_filters::Subscriber<nav_msgs::Odometry>(mt_nh, "/odom", 20));
-      points_sub.reset(new message_filters::Subscriber<sensor_msgs::PointCloud2>(mt_nh, "/velodyne_points", 20));
+      points_sub.reset(new message_filters::Subscriber<sensor_msgs::PointCloud2>(mt_nh, points_topic_name.c_str(), 20));
       sync.reset(new message_filters::TimeSynchronizer<nav_msgs::Odometry, sensor_msgs::PointCloud2>(*odom_sub, *points_sub, 20));
       sync->registerCallback(boost::bind(&HdlPeopleDetectionNodelet::callback, this, _1, _2));
     }
