@@ -34,11 +34,12 @@ find_package(catkin REQUIRED COMPONENTS
 add_message_files(FILES
   Cluster.msg
   ClusterArray.msg
+  ClusterPointCloud.msg
   Track.msg
   TrackArray.msg
 )
 
-generate_messages(DEPENDENCIES std_msgs geometry_msgs)
+generate_messages(DEPENDENCIES std_msgs geometry_msgs sensor_msgs)
 
 
 ###################################

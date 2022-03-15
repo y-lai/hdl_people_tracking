@@ -15,6 +15,7 @@
 #include <message_filters/time_synchronizer.h>
 
 #include <nav_msgs/Odometry.h>
+#include <std_msgs/Header.h>
 #include <sensor_msgs/Imu.h>
 #include <sensor_msgs/PointCloud2.h>
 #include <visualization_msgs/MarkerArray.h>
@@ -23,6 +24,7 @@
 #include <pluginlib/class_list_macros.h>
 
 #include <hdl_people_tracking/ClusterArray.h>
+#include <hdl_people_tracking/ClusterPointCloud.h>
 
 #include <hdl_people_detection/people_detector.h>
 #include <hdl_people_detection/background_subtractor.hpp>
@@ -49,6 +51,7 @@ public:
     // publishers
     backsub_points_pub = private_nh.advertise<sensor_msgs::PointCloud2>("backsub_points", 5);
     cluster_points_pub = private_nh.advertise<sensor_msgs::PointCloud2>("cluster_points", 5);
+    cluster_vector_pub = private_nh.advertise<hdl_people_tracking::ClusterPointCloud>("cluster_vec_points", 5);
     human_points_pub = private_nh.advertise<sensor_msgs::PointCloud2>("human_points", 5);
     detection_markers_pub = private_nh.advertise<visualization_msgs::MarkerArray>("detection_markers", 5);
 
@@ -224,8 +227,11 @@ private:
 
     if(cluster_points_pub.getNumSubscribers()) {
       pcl::PointCloud<pcl::PointXYZI>::Ptr accum(new pcl::PointCloud<pcl::PointXYZI>());
+      hdl_people_tracking::ClusterPointCloud accum_vec;
       for(const auto& cluster : clusters) {
         std::copy(cluster->cloud->begin(), cluster->cloud->end(), std::back_inserter(accum->points));
+        // add vector of pointclouds
+        accum_vec.clusters.push_back(cluster->cloud);
       }
       accum->width = accum->size();
       accum->height = 1;
@@ -235,6 +241,7 @@ private:
       accum->header.frame_id = globalmap->header.frame_id;
 
       cluster_points_pub.publish(accum);
+      cluster_vector_pub.publish(accum_vec);
     }
 
     if(human_points_pub.getNumSubscribers()) {
@@ -314,6 +321,7 @@ private:
   ros::Publisher backsub_points_pub;
   ros::Publisher backsub_voxel_points_pub;
 
+  ros::Publisher cluster_vector_pub;
   ros::Publisher cluster_points_pub;
   ros::Publisher human_points_pub;
 
