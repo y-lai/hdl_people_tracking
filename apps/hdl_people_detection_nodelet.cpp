@@ -231,7 +231,9 @@ private:
       for(const auto& cluster : clusters) {
         std::copy(cluster->cloud->begin(), cluster->cloud->end(), std::back_inserter(accum->points));
         // add vector of pointclouds
-        accum_vec.clusters.push_back(cluster->cloud);
+        sensor_msgs::PointCloud2 temp;
+        pcl::toROSMsg(*(cluster->cloud),temp);
+        accum_vec.clusters.push_back(temp);
       }
       accum->width = accum->size();
       accum->height = 1;
@@ -239,6 +241,9 @@ private:
 
       accum->header.stamp = filtered->header.stamp;
       accum->header.frame_id = globalmap->header.frame_id;
+
+      accum_vec.header.stamp = ros::Time::now();
+      accum_vec.header.frame_id = globalmap->header.frame_id;
 
       cluster_points_pub.publish(accum);
       cluster_vector_pub.publish(accum_vec);
