@@ -225,7 +225,7 @@ private:
       backsub_points_pub.publish(filtered);
     }
 
-    if(cluster_points_pub.getNumSubscribers()) {
+    if(cluster_points_pub.getNumSubscribers()>0 || cluster_vector_pub.getNumSubscribers()>0) {
       pcl::PointCloud<pcl::PointXYZI>::Ptr accum(new pcl::PointCloud<pcl::PointXYZI>());
       hdl_people_tracking::ClusterPointCloud accum_vec;
       for(const auto& cluster : clusters) {
