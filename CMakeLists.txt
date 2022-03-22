@@ -25,7 +25,6 @@ find_package(catkin REQUIRED COMPONENTS
   pcl_ros
   roscpp
   sensor_msgs
-  apriltag_ros
   geometry_msgs
   message_generation
 )
@@ -41,7 +40,7 @@ add_message_files(FILES
   TrackArray.msg
 )
 
-generate_messages(DEPENDENCIES std_msgs geometry_msgs sensor_msgs apriltag_ros)
+generate_messages(DEPENDENCIES std_msgs geometry_msgs sensor_msgs)
 
 
 ###################################
@@ -50,7 +49,7 @@ generate_messages(DEPENDENCIES std_msgs geometry_msgs sensor_msgs apriltag_ros)
 catkin_package(
    INCLUDE_DIRS include
 #   LIBRARIES hdl_people_tracking
-   CATKIN_DEPENDS nodelet pcl_ros roscpp geometry_msgs sensor_msgs message_runtime apriltag_ros
+   CATKIN_DEPENDS nodelet pcl_ros roscpp geometry_msgs sensor_msgs message_runtime
 #   DEPENDS system_lib
 )
 
@@ -82,10 +81,3 @@ target_link_libraries(hdl_people_tracking_nodelet
   ${PCL_LIBRARIES}
 )
 add_dependencies(hdl_people_tracking_nodelet hdl_people_tracking_gencpp)
-
-add_library(hdl_people_cluster_colour_nodelet apps/hdl_people_cluster_colour.cpp)
-target_link_libraries(hdl_people_cluster_colour_nodelet
-  ${catkin_LIBRARIES}
-  ${PCL_LIBRARIES} 
-)
-add_dependencies(hdl_people_cluster_colour_nodelet hdl_people_tracking_gencpp)
