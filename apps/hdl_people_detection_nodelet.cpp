@@ -60,6 +60,8 @@ public:
 
     clusters_pub = private_nh.advertise<hdl_people_tracking::ClusterArray>("clusters", 10);
 
+    _cluster_size_threshold = private_nh.param<int>("cluster_size_threshold",50);
+
     // subscribers
     std::string points_topic_name;
     if(!private_nh.getParam("lidar_point_name",points_topic_name))
@@ -109,6 +111,7 @@ private:
       NODELET_ERROR("cloud is empty!!");
       return;
     }
+    // NODELET_INFO("Received point cloud. Cloud size: %ld",cloud->size());
 
     // downsampling
     pcl::PointCloud<PointT>::Ptr downsampled(new pcl::PointCloud<PointT>());
@@ -116,6 +119,7 @@ private:
     downsample_filter->filter(*downsampled);
     downsampled->header = cloud->header;
     cloud = downsampled;
+    // NODELET_INFO("Finished downsampling. Cloud size: %ld",cloud->size());
 
     // background subtraction and people detection
     auto filtered = backsub->filter(cloud);
@@ -229,6 +233,11 @@ private:
       pcl::PointCloud<pcl::PointXYZI>::Ptr accum(new pcl::PointCloud<pcl::PointXYZI>());
       hdl_people_tracking::ClusterPointCloud accum_vec;
       for(const auto& cluster : clusters) {
+        // NODELET_INFO("Size of cluster: %ld",cluster->cloud->size());
+        if(cluster->cloud->size() < _cluster_size_threshold)
+        {
+          continue;
+        }
         std::copy(cluster->cloud->begin(), cluster->cloud->end(), std::back_inserter(accum->points));
         // add vector of pointclouds
         sensor_msgs::PointCloud2 temp;
@@ -342,6 +351,9 @@ private:
   std::unique_ptr<BackgroundSubtractor> backsub;
   std::unique_ptr<PeopleDetector> detector;
 
+
+  // parameters
+  int _cluster_size_threshold;
 };
 
 }
